@@ -4,6 +4,7 @@ var mongodb = require("mongodb");
 var mongoose = require("mongoose");
 const bodyparser = require('body-parser');
 let jwt = require("jsonwebtoken");
+const auth = require('./middleware/auth')
 
 // Middleware
 var app = express();
@@ -13,6 +14,7 @@ app.use(bodyparser.json({ limit: '50mb' }));
 app.use(bodyparser.urlencoded({ limit: '50mb', extended: true }));
 mongoose.set('strictQuery', true);
 mongoose.connect("mongodb://localhost:27017/eccomsite");
+
 let db = mongoose.connection;
 
 db.on("error", (error) => {
@@ -37,9 +39,12 @@ app.use((req, res, next) => {
   if (!req.headers.authorization) {
     let data = {
       status: "exit",
-      message: "autherization error"
+      message: "autherization error",
+      statusCode: 408
     };
-    res.end(JSON.stringify(data));
+    // res.end(JSON.stringify(data));
+    // res.status(408).json(data);
+    res.json(data);
   }
   else if (req.path.includes("/gettoken")) {
     next();
@@ -57,9 +62,10 @@ app.use((req, res, next) => {
     catch (ex) {
       let data = {
         status: "exit",
-        message: "autherization error-decode"
+        message: "autherization error-decode",
+        statusCode: 408
       };
-      res.end(JSON.stringify(data));
+      res.json(data);
     }
   }
   // next();
